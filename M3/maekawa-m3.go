@@ -74,7 +74,7 @@ func (process *Process) RequestCS() {
 }
 
 func (process *Process) ExecuteCS() {
-	fmt.Print(string(colorRed), "Process", process.id, "updates the value of shared_value from ", string(colorGreen), *process.data, string(colorReset), " to")
+	fmt.Print(string(colorCyan), "Process ", process.id, " updates the value of shared_value from ", string(colorGreen), *process.data, string(colorCyan), " to", string(colorReset))
 
 	// Update the shared value into the process ID
 	*process.data = process.id * process.id
