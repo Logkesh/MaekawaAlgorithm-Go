@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -142,6 +143,57 @@ func (process *Process) StartProcess(wg *sync.WaitGroup) {
 	wg.Done()
 }
 
+// Validate all quorums.
+func ValidateQuorums() {
+	valid := true
+
+	// Validate Intersection property.
+	for i := 0; i < len(coterie); i++ {
+		for j := i + 1; j < len(coterie); j++ {
+			flag := false
+			hash := make(map[int]bool)
+			for _, a := range coterie[i] {
+				hash[a] = true
+			}
+			for _, a := range coterie[j] {
+				if hash[a] {
+					flag = true
+					break
+				}
+			}
+			valid = valid && flag
+		}
+	}
+
+	if valid {
+		fmt.Println(string(colorGreen), " The Given Quorum follows Intersection property!", string(colorReset))
+	} else {
+		log.Fatal(string(colorRed), " The Given Quorum Does not follow Intersection property!", string(colorReset))
+	}
+
+	// Validate Minimality property
+	for i := 0; i < len(coterie); i++ {
+		for j := i + 1; j < len(coterie); j++ {
+			hash := make(map[int]bool)
+			for _, a := range coterie[i] {
+				hash[a] = true
+			}
+			for _, a := range coterie[j] {
+				if hash[a] {
+					delete(hash, a)
+				}
+			}
+			valid = valid && (len(hash) == 0)
+		}
+	}
+
+	if valid {
+		fmt.Println(string(colorGreen), " The Given Quorum follows Minimality property!", string(colorReset))
+	} else {
+		log.Fatal(string(colorRed), " The Given Quorum Does not follow Minimality property!", string(colorReset))
+	}
+}
+
 func main() {
 
 	fmt.Printf("\n")
@@ -160,18 +212,19 @@ func main() {
 	numProcs = 5
 
 	processes = make([]*Process, numProcs)
-	coterie = [][]int{
-		{2,3},
-		{2,4},
-		{1,4},
-		{1,2,4},
-		{1,2,3},
-	}
 	for i := 0; i < numProcs; i++ {
 		processes[i] = NewProcess(i, &shared_value)
 		go processes[i].ManageRequest()
 	}
 	
+	coterie := [][]int{
+		{0, 1, 2},
+		{1, 2, 3},
+		{2, 3, 4},
+		{3, 4, 0},
+		{4, 0, 1},
+	}
+
 	// Set the quorums for each process.
 	for i := 0; i < numProcs; i++ {
 		processes[i].quorum = coterie[i]
@@ -196,6 +249,8 @@ func main() {
 	fmt.Println(string(colorPurple), "-------------------", string(colorReset))
 
 	fmt.Printf("\n")
+
+	ValidateQuorums()
 
 	var wg sync.WaitGroup
 	wg.Add(numberOfCSaccess)
