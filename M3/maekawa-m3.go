@@ -9,7 +9,7 @@ import (
 )
 
 // import input "ds/minimality_invalid"
-//import input "ds/intersection_invalid"
+// import input "ds/intersection_invalid"
 import input "ds/valid"
 
 var colorReset = "\033[0m"
@@ -151,7 +151,7 @@ func ValidateQuorums(coterie [][]int) {
 	valid := true
 
 	// Validate Intersection property.
-	for i := 0; i < len(coterie); i++ {
+	for i := 0; i < len(coterie)-1; i++ {
 		for j := i + 1; j < len(coterie); j++ {
 			flag := false
 			hash := make(map[int]bool)
@@ -169,32 +169,46 @@ func ValidateQuorums(coterie [][]int) {
 	}
 
 	if valid {
-		fmt.Println(string(colorGreen), " The Given Quorum follows Intersection property!", string(colorReset))
+		fmt.Println("The Given Quorum follows the Intersection property!")
 	} else {
-		log.Fatal(string(colorRed), " The Given Quorum Does not follow Intersection property!", string(colorReset))
+		log.Fatal("The Given Quorum does not follow the Intersection property!")
 	}
 
 	// Validate Minimality property
-	for i := 0; i < len(coterie); i++ {
+	valid = true
+
+	for i := 0; i < len(coterie)-1; i++ {
 		for j := i + 1; j < len(coterie); j++ {
-			hash := make(map[int]bool)
-			for _, a := range coterie[i] {
-				hash[a] = true
+			if IsSubset(coterie[i], coterie[j]) || IsSubset(coterie[j], coterie[i]) {
+				valid = false
+				break
 			}
-			for _, a := range coterie[j] {
-				if hash[a] {
-					delete(hash, a)
-				}
-			}
-			valid = valid && (len(hash) == 0)
+		}
+		if !valid {
+			break
 		}
 	}
 
 	if valid {
-		fmt.Println(string(colorGreen), " The Given Quorum follows Minimality property!", string(colorReset))
+		fmt.Println("The Given Quorum follows the Minimality property!")
 	} else {
-		log.Fatal(string(colorRed), " The Given Quorum Does not follow Minimality property!", string(colorReset))
+		log.Fatal("The Given Quorum does not follow the Minimality property!")
 	}
+}
+
+func IsSubset(a, b []int) bool {
+	set := make(map[int]bool)
+
+	for _, num := range a {
+		set[num] = true
+	}
+
+	for _, num := range b {
+		if !set[num] {
+			return false
+		}
+	}
+	return true
 }
 
 func main() {
