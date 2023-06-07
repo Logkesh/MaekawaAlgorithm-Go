@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+// import input "ds/minimality_invalid"
+//import input "ds/intersection_invalid"
+import input "ds/valid"
+
 var colorReset = "\033[0m"
 
 var colorRed = "\033[31m"
@@ -31,7 +35,6 @@ type Process struct {
 }
 
 var processes []*Process
-var coterie [][]int
 
 // NewProcess creates a new process.
 func NewProcess(id int, data *int) *Process {
@@ -144,7 +147,7 @@ func (process *Process) StartProcess(wg *sync.WaitGroup) {
 }
 
 // Validate all quorums.
-func ValidateQuorums() {
+func ValidateQuorums(coterie [][]int) {
 	valid := true
 
 	// Validate Intersection property.
@@ -206,10 +209,10 @@ func main() {
 	var shared_value int = -1
 
 	// Create a set of processes.
-	var numProcs int
-	fmt.Println(string(colorCyan), "Enter the number of processes: ", string(colorReset))
+	numProcs := input.NumProcs
+	fmt.Println(string(colorCyan), "Number of processes: ", string(colorGreen), numProcs, string(colorReset))
 	// fmt.Scanln(&numProcs)
-	numProcs = 5
+	
 
 	processes = make([]*Process, numProcs)
 	for i := 0; i < numProcs; i++ {
@@ -217,21 +220,15 @@ func main() {
 		go processes[i].ManageRequest()
 	}
 	
-	coterie := [][]int{
-		{0, 1, 2},
-		{1, 2, 3},
-		{2, 3, 4},
-		{3, 4, 0},
-		{4, 0, 1},
-	}
+	coterie := input.Coterie
 
 	// Set the quorums for each process.
 	for i := 0; i < numProcs; i++ {
 		processes[i].quorum = coterie[i]
 	}
 
-	var numberOfCSaccess int = 5
-	fmt.Println(string(colorCyan), "Enter the number of iterations: ", string(colorReset))
+	var numberOfCSaccess = input.NumberOfCSaccess
+	fmt.Println(string(colorCyan), "Number of iterations: ", string(colorGreen), numProcs, string(colorReset))
 	// fmt.Scanln(&numberOfCSaccess)
 
 	// Print the quorums.
@@ -250,7 +247,7 @@ func main() {
 
 	fmt.Printf("\n")
 
-	ValidateQuorums()
+	ValidateQuorums(coterie)
 
 	var wg sync.WaitGroup
 	wg.Add(numberOfCSaccess)
